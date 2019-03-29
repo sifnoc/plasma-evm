@@ -1,50 +1,55 @@
-version: '2.3'
+version: '3'
 services:
-  root:
-    image: plasma-evm/root
-    networks:
-      plasma:
-        ipv4_address: ${ROOTCHAIN_IP}
+  bootnode:
+    image: plasma-evm/bootnode
     build:
-      context: ./containers/docker/rootchain
-      dockerfile: Dockerfile
-    healthcheck:
-      test: "echo healthcheck!"
-      interval: 60s
-      timeout: 30s
-      retries: 5
-    ports:
-      - "0.0.0.0:8545:8545"
-      - "0.0.0.0:8546:8546"
-    command: sh run.rootchain.sh
+      context: .
+      dockerfile: Dockerfile.bootnode
+    networks:
+      default:
+        ipv4_address: ${SUBNET}.${BOOTNODE_IP}
+    command: sh docker.bootnode.sh
 
   child_operator:
     image: plasma-evm/child
-    networks:
-      plasma:
-        ipv4_address: ${OPERATOR_IP}
+    volumes:
+      - '${LOGDIR}_Operator:/usr/local/bin/log'
     build:
       context: .
       dockerfile: Dockerfile.plasma
-      target: geth
+    networks:
+      default:
+        ipv4_address: ${SUBNET}.${OPERATOR_IP}
     healthcheck:
       test: ["CMD-SHELL", "sh health_checker.sh || exit 1"]
       interval: 60s
       timeout: 30s
-      retries: 0
-      start_period: 60s
-    depends_on:
-      root:
-        condition: service_started
-    ports:
-    - "0.0.0.0:8547:8547"
-    - "0.0.0.0:8548:8548"
+      retries: 3
+    environment:
+      - ROOTCHAIN_ADDR=${SUBNET}.${ROOTCHAIN_IP}
+      - BOOTNODE_ADDR=${SUBNET}.${BOOTNODE_IP}
     command: sh docker.operator.pls.sh
 
+  child_user:
+    image: plasma-evm/child
+    build:
+        context: .
+        dockerfile: Dockerfile.plasma
+    volumes:
+      - '${LOGDIR}_User:/usr/local/bin/log' 
+    networks:
+      default:
+        ipv4_address: ${SUBNET}.${USER_IP}
+    environment:
+      - ROOTCHAIN_ADDR=${SUBNET}.${ROOTCHAIN_IP}
+      - OPERATOR_ADDR=${SUBNET}.${OPERATOR_IP}
+      - BOOTNODE_ADDR=${SUBNET}.${BOOTNODE_IP}
+    ports:
+      - "0.0.0.0:48547:8547"
+      - "0.0.0.0:48548:8548"
+    command: sh docker.user.pls.sh
+
 networks:
-  plasma:
-    driver: bridge
-    ipam:
-      config:
-      - subnet: 172.30.0.0/24
-        gateway: 172.30.0.1
+  default:
+    external:
+      name: plasma_tokamak

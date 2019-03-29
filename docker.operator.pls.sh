@@ -14,6 +14,7 @@ CHALLENGER="0x3616BE06D68dD22886505e9c2CaAa9EcA84564b8"
 
 rm -rf $DATADIR
 
+# dev mode default networkid is 1337
 geth \
   --datadir $DATADIR \
   --miner.etherbase 0x71562b71999873DB5b286dF957af199Ec94617F7 \
@@ -22,10 +23,9 @@ geth \
   --dev.p2p \
   --rpcaddr 0.0.0.0 \
   --rpcport 8547 \
-  --port 30301 \
+  --port 30307 \
   --dev.key $OPERATOR_KEY,$KEY1,$KEY2,$KEY3,$KEY4,$KEY5,$CHALLENGER_KEY \
   --operator $OPERATOR \
-  --rootchain.challenger $CHALLENGER \
-  --tx.interval "300ms" \
-  --rootchain.url "ws://172.30.0.3:8546" \
-  --bootnodes enode://401bd6383fe11a5224d5b4277b53d7c0278efed3ca685b6593935751ad1fe734a8e35d2b3ebd9d7fc6da6cff12e72cfcfca8db408bf2e49f1fad4c503956d07f@172.30.0.6:30301
+  --tx.interval "20s" \
+  --rootchain.url "ws://${ROOTCHAIN_ADDR}:8546" \
+  --bootnodes "enode://401bd6383fe11a5224d5b4277b53d7c0278efed3ca685b6593935751ad1fe734a8e35d2b3ebd9d7fc6da6cff12e72cfcfca8db408bf2e49f1fad4c503956d07f@${BOOTNODE_ADDR}:30301" > log/operator_node.log

@@ -5,11 +5,13 @@ json=$(curl -X POST --data '{"jsonrpc":"2.0","method":"eth_getBlockByNumber","pa
  -H "Content-Type: application/json" 127.0.0.1:8547 || echo "Operator node is not initialized" & exit 1)
 
 blocknumber=$(echo $json | jq '.result.number')
+last_block=$(tail -n 1 lastblock.log)
 
-echo $blocknumber >> result.log
-
-second_to_last_block=$(tail -n 2 result.log | head -1)
-last_block=$(tail -n 1 result.log)
+echo $blocknumber >> lastblock.log
+if [ -z ${last_block} ] 
+then
+	sleep 20
+fi
 
 if [ -n "${second_to_last_block}" ] && [ $second_to_last_block = $last_block ]
 then
