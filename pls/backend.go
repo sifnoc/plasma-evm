@@ -24,6 +24,7 @@ import (
 	"runtime"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/Onther-Tech/plasma-evm/accounts"
 	"github.com/Onther-Tech/plasma-evm/accounts/abi/bind"
@@ -636,7 +637,21 @@ func (s *Plasma) Stop() error {
 	s.miner.Stop()
 	s.eventMux.Stop()
 
+	if s.rootchainManager.quit != nil {
+		log.Info(">>>> checking rootchain manager")
+		log.Info(">>>> ", s.rootchainManager.quit)
+	}
+
 	s.rootchainManager.Stop()
+	if s.rootchainManager.quit != nil {
+		log.Info(">>>> rootchain Manager stop")
+		timer := time.NewTimer(20 * time.Second)
+		<-timer.C
+	} else {
+		log.Info(">>>> rootchain Manager still running")
+		timer := time.NewTimer(100 * time.Second)
+		<-timer.C
+	}
 	s.chainDb.Close()
 	close(s.shutdownChan)
 	return nil

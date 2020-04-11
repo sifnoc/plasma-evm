@@ -198,7 +198,7 @@ func ReadNumConfirmedRawTxs(db ethdb.Reader, addr common.Address) uint64 {
 	return n
 }
 
-func WriteNumConfirmedRawTxs(db ethdb.KeyValueWriter, addr common.Address, n uint64) {
+func WriteNumConfirmedRawTxs(db ethdb.Database, addr common.Address, n uint64) {
 	data, err := rlp.EncodeToBytes(n)
 	if err != nil {
 		log.Crit("Failed to encode number of raw transactions", "err", err)
