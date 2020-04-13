@@ -198,13 +198,18 @@ func ReadNumConfirmedRawTxs(db ethdb.Reader, addr common.Address) uint64 {
 	return n
 }
 
-func WriteNumConfirmedRawTxs(db ethdb.Database, addr common.Address, n uint64) {
+func WriteNumConfirmedRawTxs(db ethdb.Database, quit chan struct{}, addr common.Address, n uint64) {
 	data, err := rlp.EncodeToBytes(n)
 	if err != nil {
 		log.Crit("Failed to encode number of raw transactions", "err", err)
 	}
-	if err := db.Put(numConfirmedRawTxsKey(addr), data); err != nil {
-		log.Crit("Failed to store number of raw transactions", "err", err)
+	select {
+		case <-quit:
+			return
+		default:
+			if err := db.Put(numConfirmedRawTxsKey(addr), data); err != nil {
+				log.Crit("Failed to store number of raw transactions", "err", err)
+			}
 	}
 }
 
