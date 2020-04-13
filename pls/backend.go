@@ -20,6 +20,11 @@ package pls
 import (
 	"errors"
 	"fmt"
+	"math/big"
+	"runtime"
+	"sync"
+	"sync/atomic"
+
 	"github.com/Onther-Tech/plasma-evm/accounts"
 	"github.com/Onther-Tech/plasma-evm/accounts/abi/bind"
 	"github.com/Onther-Tech/plasma-evm/accounts/keystore"
@@ -50,10 +55,6 @@ import (
 	"github.com/Onther-Tech/plasma-evm/rlp"
 	"github.com/Onther-Tech/plasma-evm/rpc"
 	"github.com/Onther-Tech/plasma-evm/tx"
-	"math/big"
-	"runtime"
-	"sync"
-	"sync/atomic"
 )
 
 type LesServer interface {
@@ -635,29 +636,8 @@ func (s *Plasma) Stop() error {
 	s.miner.Stop()
 	s.eventMux.Stop()
 
-	if IsClosed(s.rootchainManager.quit) {
-		log.Info(">>>> Roootchain manager closed before stop()")
-	} else {
-		log.Info(">>>> Roootchain manager not closed before stop()")
-	}
 	s.rootchainManager.Stop()
-
-	if IsClosed(s.rootchainManager.quit) {
-		log.Info(">>>> Roootchain manager closed after stop()")
-	} else {
-		log.Info(">>>> Roootchain manager not closed after stop()")
-	}
 	s.chainDb.Close()
 	close(s.shutdownChan)
 	return nil
-}
-
-
-func IsClosed(ch <-chan struct{}) bool {
-	select {
-	case <-ch:
-		return true
-	default:
-	}
-	return false
 }

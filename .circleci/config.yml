@@ -79,7 +79,7 @@ jobs:
             set -x
             rm -rf $DATADIR_ROOTCHAIN
             cd go-ethereum
-            bash run.rootchain.sh
+            bash run.rootchain.sh false
 
       - run:
           name: Test pls package - Basic (1/2)
@@ -158,7 +158,7 @@ jobs:
           command: |
             set -x
             cd go-ethereum
-            bash run.rootchain.sh true
+            bash run.rootchain.sh false
 
       - run:
           name: Setup childchain as operator
