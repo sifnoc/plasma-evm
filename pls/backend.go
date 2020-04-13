@@ -20,12 +20,6 @@ package pls
 import (
 	"errors"
 	"fmt"
-	"math/big"
-	"runtime"
-	"sync"
-	"sync/atomic"
-	"time"
-
 	"github.com/Onther-Tech/plasma-evm/accounts"
 	"github.com/Onther-Tech/plasma-evm/accounts/abi/bind"
 	"github.com/Onther-Tech/plasma-evm/accounts/keystore"
@@ -56,6 +50,10 @@ import (
 	"github.com/Onther-Tech/plasma-evm/rlp"
 	"github.com/Onther-Tech/plasma-evm/rpc"
 	"github.com/Onther-Tech/plasma-evm/tx"
+	"math/big"
+	"runtime"
+	"sync"
+	"sync/atomic"
 )
 
 type LesServer interface {
@@ -637,22 +635,29 @@ func (s *Plasma) Stop() error {
 	s.miner.Stop()
 	s.eventMux.Stop()
 
-	if s.rootchainManager.quit != nil {
-		log.Info(">>>> checking rootchain manager")
-		log.Info(">>>> ", s.rootchainManager.quit)
-	}
-
-	s.rootchainManager.Stop()
-	if s.rootchainManager.quit != nil {
-		log.Info(">>>> rootchain Manager stop")
-		timer := time.NewTimer(20 * time.Second)
-		<-timer.C
+	if IsClosed(s.rootchainManager.quit) {
+		log.Info(">>>> Roootchain manager closed before stop()")
 	} else {
-		log.Info(">>>> rootchain Manager still running")
-		timer := time.NewTimer(100 * time.Second)
-		<-timer.C
+		log.Info(">>>> Roootchain manager not closed before stop()")
+	}
+	s.rootchainManager.Stop()
+
+	if IsClosed(s.rootchainManager.quit) {
+		log.Info(">>>> Roootchain manager closed after stop()")
+	} else {
+		log.Info(">>>> Roootchain manager not closed after stop()")
 	}
 	s.chainDb.Close()
 	close(s.shutdownChan)
 	return nil
+}
+
+
+func IsClosed(ch <-chan struct{}) bool {
+	select {
+	case <-ch:
+		return true
+	default:
+	}
+	return false
 }
