@@ -688,7 +688,7 @@ func (tm *TransactionManager) confirmQueue(addr common.Address) {
 	// update database
 	if i != 0 {
 		tm.unconfirmed[addr] = tm.unconfirmed[addr][i:]
-		WriteNumConfirmedRawTxs(tm.db, addr, numConfirmed)
+		WriteNumConfirmedRawTxs(tm.db, tm.quit, addr, numConfirmed)
 		WriteUnconfirmedTxs(tm.db, addr, tm.unconfirmed[addr])
 	}
 }
