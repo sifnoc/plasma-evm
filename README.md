@@ -1,6 +1,7 @@
 # Plasma EVM Implementation
 
-[![CircleCI](https://circleci.com/gh/sifnoc/plasma-evm.svg?style=shield)](https://app.circleci.com/pipelines/github/sifnoc/plasma-evm)
+[![CircleCI](https://circleci.com/gh/sifnoc/plasma-evm.svg?style=shield)](https://app.circleci.com/pipelines/github/sifnoc/plasma-evm) [![Discord](https://img.shields.io/badge/discord-join%20chat-blue.svg)](https://discord.gg/8wSpJKz)
+
 
 Implementation of [Plasma EVM](https://tokamak.network). You can check smart contracts [here](https://github.com/Onther-Tech/plasma-evm-contracts). For more information, see [documentations](http://docs.tokamak.network/).
 
