@@ -33,7 +33,6 @@ jobs:
             set -x
             git clone -b fix/stop-process https://github.com/Onther-Tech/plasma-evm
             cd plasma-evm
-            git reset --hard 53a12e1d2c9d8cde51fbd721a58f9f0afa4f6d3a
             make geth
             echo "" > signer.pass
             build/bin/geth --nousb account importKey $KEY0 --password signer.pass --datadir $DATADIR_MANAGERS
