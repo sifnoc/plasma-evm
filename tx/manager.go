@@ -259,6 +259,7 @@ func (tm *TransactionManager) Count(account accounts.Account, tx *types.Transact
 
 func (tm *TransactionManager) Start() {
 	tm.wg = new(sync.WaitGroup)
+	tm.wg.Add(1)
 	go tm.confirmLoop()
 
 	// send a single raw transaction to root chain.
@@ -710,8 +711,7 @@ func (tm *TransactionManager) indexOf(addr common.Address) int {
 
 // TODO: use SubscribeNewHead with disconnection handling
 func (tm *TransactionManager) confirmLoop() {
-	tm.wg.Add(1)
-	tm.wg.Done()
+	defer tm.wg.Done()
 	closed := false
 
 	newHeaderCh := make(chan *types.Header)
@@ -806,6 +806,7 @@ func (tm *TransactionManager) confirmLoop() {
 func (tm *TransactionManager) Stop() {
 	tm.wg.Wait()
 	close(tm.quit)
+	tm.wg.Wait()
 }
 
 func (tm *TransactionManager) inspect(addr common.Address) {
