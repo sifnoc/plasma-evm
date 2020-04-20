@@ -91,8 +91,8 @@ func NewTransactionManager(ks *keystore.KeyStore, backend *ethclient.Client, db 
 		numKnownErr: make(map[common.Hash]uint64),
 
 		taskCh: make(chan *RawTransaction, MaxNumTask),
-
-		quit: make(chan struct{}),
+		wg:     new(sync.WaitGroup),
+		quit:   make(chan struct{}),
 	}
 
 	gasPrice := ReadGasPrice(db)
@@ -258,7 +258,6 @@ func (tm *TransactionManager) Count(account accounts.Account, tx *types.Transact
 }
 
 func (tm *TransactionManager) Start() {
-	tm.wg = new(sync.WaitGroup)
 	tm.wg.Add(1)
 	go tm.confirmLoop()
 
@@ -804,7 +803,6 @@ func (tm *TransactionManager) confirmLoop() {
 }
 
 func (tm *TransactionManager) Stop() {
-	tm.wg.Wait()
 	close(tm.quit)
 	tm.wg.Wait()
 }
