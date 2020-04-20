@@ -67,6 +67,7 @@ type TransactionManager struct {
 
 	lock         sync.RWMutex
 	gasPriceLock sync.Mutex
+	wg           *sync.WaitGroup
 	quit         chan struct{}
 }
 
@@ -256,8 +257,9 @@ func (tm *TransactionManager) Count(account accounts.Account, tx *types.Transact
 	return count
 }
 
-func (tm *TransactionManager) Start(wg *sync.WaitGroup) {
-	go tm.confirmLoop(wg)
+func (tm *TransactionManager) Start() {
+	tm.wg = new(sync.WaitGroup)
+	go tm.confirmLoop()
 
 	// send a single raw transaction to root chain.
 	// TODO: make it safe under root chain provider disconnect
@@ -421,9 +423,9 @@ func (tm *TransactionManager) Start(wg *sync.WaitGroup) {
 				}
 
 				for addr, _ := range tm.pending {
-					wg.Add(1)
+					tm.wg.Add(1)
 					go func(addr common.Address) {
-						defer wg.Done()
+						defer tm.wg.Done()
 						log.Trace("TransactionManager iterates", "addr", addr)
 						queue := tm.pending[addr]
 
@@ -707,10 +709,9 @@ func (tm *TransactionManager) indexOf(addr common.Address) int {
 }
 
 // TODO: use SubscribeNewHead with disconnection handling
-func (tm *TransactionManager) confirmLoop(wg *sync.WaitGroup) {
-	wg.Add(1)
-	defer wg.Done()
-
+func (tm *TransactionManager) confirmLoop() {
+	tm.wg.Add(1)
+	tm.wg.Done()
 	closed := false
 
 	newHeaderCh := make(chan *types.Header)
@@ -803,6 +804,7 @@ func (tm *TransactionManager) confirmLoop(wg *sync.WaitGroup) {
 }
 
 func (tm *TransactionManager) Stop() {
+	tm.wg.Wait()
 	close(tm.quit)
 }
 
